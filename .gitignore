@@ -1,1 +1,5 @@
-node_modules/\nbuild/\n.svelte-kit/\n.env\npackage-lock.json
+node_modules/
+build/
+.svelte-kit/
+.env
+package-lock.json

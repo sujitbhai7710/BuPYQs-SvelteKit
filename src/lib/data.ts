@@ -1,11 +1,16 @@
 import type { FileEntry, SemesterData, SyllabusEntry } from './types.js';
 
-/** Convert Google Drive file URL to direct download URL */
+/** Convert Google Drive file/folder URL to direct download URL */
 export function getDirectDownloadUrl(url: string): string {
   // Match https://drive.google.com/file/d/FILE_ID/view?usp=drive_web
   const fileMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
   if (fileMatch) {
-    return `https://drive.google.com/uc?export=download&id=${fileMatch[1]}`;
+    return `https://drive.usercontent.google.com/download?id=${fileMatch[1]}&export=download&confirm=t`;
+  }
+  // Match https://drive.google.com/open?id=FILE_ID
+  const openMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if (openMatch) {
+    return `https://drive.usercontent.google.com/download?id=${openMatch[1]}&export=download&confirm=t`;
   }
   return url;
 }
@@ -31,8 +36,39 @@ export function getShortSemesterName(name: string): string {
   return name;
 }
 
+/** Convert roman numeral to number for sorting */
+function romanToNum(roman: string): number {
+  const map: Record<string, number> = { I: 1, V: 5, X: 10, L: 50, C: 100, D: 500, M: 1000 };
+  let result = 0;
+  const upper = roman.toUpperCase();
+  for (let i = 0; i < upper.length; i++) {
+    const current = map[upper[i]] || 0;
+    const next = map[upper[i + 1]] || 0;
+    if (current < next) {
+      result -= current;
+    } else {
+      result += current;
+    }
+  }
+  return result;
+}
+
+/** Extract semester number from name for sorting */
+export function getSemesterNumber(name: string): number {
+  // Try "Semester N"
+  const semNumMatch = name.match(/[Ss]emester\s*(\d+)/);
+  if (semNumMatch) return parseInt(semNumMatch[1], 10);
+  // Try "Sem III", "SEM-III", etc.
+  const romanMatch = name.match(/[Ss][Ee][Mm][\s\-]*([IVXivx]+)/);
+  if (romanMatch) return romanToNum(romanMatch[1]);
+  // Try just a number
+  const numMatch = name.match(/(\d+)/);
+  if (numMatch) return parseInt(numMatch[1], 10);
+  return 0;
+}
+
 export const subjectEmojis: Record<string, string> = {
-  'Bengali': 'বাংলা',
+  'Bengali': '📝',
   'Botany': '🌿',
   'Chemistry': '⚗️',
   'Commerce': '💼',

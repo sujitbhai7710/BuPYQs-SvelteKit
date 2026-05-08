@@ -34,7 +34,8 @@
     getAllFiles,
     sortSyllabusEntries,
     getDirectDownloadUrl,
-    getShortSemesterName
+    getShortSemesterName,
+    getSemesterNumber
   } from '$lib/data.js';
 
   // ---- State ----
@@ -98,7 +99,7 @@
     const type = data?.[selectedSubject]?.systems?.[selectedSystem]?.types?.[selectedType];
     if (!type) return [];
     return Object.keys(type.semesters).sort(
-      (a, b) => (type.semesters[a]?.number || 0) - (type.semesters[b]?.number || 0)
+      (a, b) => getSemesterNumber(a) - getSemesterNumber(b)
     );
   });
 
@@ -203,15 +204,8 @@
   function handleDownload(file: FileEntry) {
     if (file.url) {
       const downloadUrl = getDirectDownloadUrl(file.url);
-      const a = document.createElement('a');
-      a.href = downloadUrl;
-      a.download = file.name;
-      a.target = '_blank';
-      a.rel = 'noopener noreferrer';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      showToast('Downloading...', file.name);
+      window.open(downloadUrl, '_blank');
+      showToast('Download started', file.name);
     }
   }
 
@@ -971,6 +965,7 @@
                             href={entry.url}
                             target="_blank"
                             rel="noopener noreferrer"
+                            download
                             class="flex items-center gap-2.5 p-2 rounded-lg hover:bg-gray-50 transition-colors group"
                           >
                             <div

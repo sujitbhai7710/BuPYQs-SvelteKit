@@ -32,7 +32,9 @@
     syllabusEmojis,
     countFiles,
     getAllFiles,
-    sortSyllabusEntries
+    sortSyllabusEntries,
+    getDirectDownloadUrl,
+    getShortSemesterName
   } from '$lib/data.js';
 
   // ---- State ----
@@ -124,7 +126,7 @@
     if (selectedSubject) items.push({ label: selectedSubject, step: Step.SUBJECT });
     if (selectedSystem) items.push({ label: selectedSystem, step: Step.SYSTEM });
     if (selectedType) items.push({ label: selectedType, step: Step.TYPE });
-    if (selectedSemester) items.push({ label: selectedSemester, step: Step.SEMESTER });
+    if (selectedSemester) items.push({ label: getShortSemesterName(selectedSemester), step: Step.SEMESTER });
     return items;
   });
 
@@ -200,8 +202,16 @@
 
   function handleDownload(file: FileEntry) {
     if (file.url) {
-      window.open(file.url, '_blank');
-      showToast('Opening download...', file.name);
+      const downloadUrl = getDirectDownloadUrl(file.url);
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = file.name;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      showToast('Downloading...', file.name);
     }
   }
 
@@ -692,13 +702,13 @@
                           class="w-9 h-9 rounded-lg bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center flex-shrink-0 shadow-sm"
                         >
                           <span class="font-bold text-white text-sm"
-                            >{semData?.number || '?'}</span
+                            >{(() => { const m = semName.match(/[IVXivx]+|\d+/); return m ? m[0].toUpperCase() : '?' })()}</span
                           >
                         </div>
                         <div class="min-w-0">
                           <h3
-                            class="font-semibold text-xs md:text-sm text-gray-900 group-hover:text-teal-700 transition-colors truncate"
-                            >{semName}</h3
+                            class="font-semibold text-xs md:text-sm text-gray-900 group-hover:text-teal-700 transition-colors"
+                            >{getShortSemesterName(semName)}</h3
                           >
                           <div class="flex items-center gap-1 mt-0.5">
                             {#if fileCount > 0}
@@ -754,7 +764,7 @@
                 <h2 class="text-xl md:text-2xl font-bold text-gray-900 mb-1">Question Papers</h2>
                 <p class="text-sm text-gray-500 mb-5">
                   <span class="text-teal-600 font-medium">{selectedSubject}</span> · {selectedSystem} ·
-                  {selectedType} · {selectedSemester}
+                  {selectedType} · {getShortSemesterName(selectedSemester)}
                 </p>
 
                 {#if currentSemesterData.url}

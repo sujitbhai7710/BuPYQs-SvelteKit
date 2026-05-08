@@ -1,5 +1,36 @@
 import type { FileEntry, SemesterData, SyllabusEntry } from './types.js';
 
+/** Convert Google Drive file URL to direct download URL */
+export function getDirectDownloadUrl(url: string): string {
+  // Match https://drive.google.com/file/d/FILE_ID/view?usp=drive_web
+  const fileMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (fileMatch) {
+    return `https://drive.google.com/uc?export=download&id=${fileMatch[1]}`;
+  }
+  return url;
+}
+
+/** Extract short semester name from long key like 'Botany_CBCS_General_Sem III' -> 'Sem III' */
+export function getShortSemesterName(name: string): string {
+  // Try to match patterns like "Sem I", "Sem- III", "SEM I", "Semester 1", etc.
+  const semMatch = name.match(/[Ss][Ee][Mm][\s\-]*[IVXivx\d]+/);
+  if (semMatch) {
+    // Normalize: "Sem- III" -> "Sem III", "SEM I" -> "Sem I"
+    return semMatch[0]
+      .replace(/[Ss][Ee][Mm]/, 'Sem')
+      .replace(/\s*[-_]\s*/, ' ')
+      .replace(/\s+/, ' ')
+      .trim();
+  }
+  // Fallback: try "Semester N"
+  const semesterMatch = name.match(/[Ss]emester\s*\d+/i);
+  if (semesterMatch) {
+    return semesterMatch[0].replace(/Semester\s*/i, 'Sem ');
+  }
+  // If no match, return the original name
+  return name;
+}
+
 export const subjectEmojis: Record<string, string> = {
   'Bengali': 'বাংলা',
   'Botany': '🌿',

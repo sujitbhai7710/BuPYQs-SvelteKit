@@ -89,12 +89,12 @@
     data?.[selectedSubject] ? Object.keys(data[selectedSubject].systems).sort() : []
   );
 
-  let types = $derived(() => {
+  let types = $derived.by(() => {
     const sys = data?.[selectedSubject]?.systems?.[selectedSystem];
     return sys ? Object.keys(sys.types).sort() : [];
   });
 
-  let semesters = $derived(() => {
+  let semesters = $derived.by(() => {
     const type = data?.[selectedSubject]?.systems?.[selectedSystem]?.types?.[selectedType];
     if (!type) return [];
     return Object.keys(type.semesters).sort(
@@ -114,14 +114,14 @@
       : subjects
   );
 
-  let filteredSyllabusSubjects = $derived(() => {
+  let filteredSyllabusSubjects = $derived.by(() => {
     if (!syllabusData) return [];
     const keys = Object.keys(syllabusData).sort();
     if (!syllabusSearch) return keys;
     return keys.filter((k) => k.toLowerCase().includes(syllabusSearch.toLowerCase()));
   });
 
-  let breadcrumbs = $derived(() => {
+  let breadcrumbs = $derived.by(() => {
     const items: { label: string; step: Step }[] = [];
     if (selectedSubject) items.push({ label: selectedSubject, step: Step.SUBJECT });
     if (selectedSystem) items.push({ label: selectedSystem, step: Step.SYSTEM });
@@ -130,7 +130,7 @@
     return items;
   });
 
-  let totalPapers = $derived(() => {
+  let totalPapers = $derived.by(() => {
     if (!data) return 0;
     let c = 0;
     Object.values(data).forEach((s) =>
@@ -145,7 +145,7 @@
     return c;
   });
 
-  let totalSyllabus = $derived(() => {
+  let totalSyllabus = $derived.by(() => {
     if (!syllabusData) return 0;
     return Object.values(syllabusData).reduce((a, b) => a + b.length, 0);
   });
